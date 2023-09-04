@@ -1,9 +1,16 @@
 description = 'Conscrypt: OpenJdk UberJAR'
+repositories {
+        mavenLocal()
+    }
+
 
 ext {
-    buildUberJar = Boolean.parseBoolean(System.getProperty('org.conscrypt.openjdk.buildUberJar', 'false'))
+    buildUberJar = true
+    //buildUberJar = Boolean.parseBoolean(System.getProperty('org.conscrypt.openjdk.buildUberJar', 'false'))
     uberJarClassifiers = (System.getProperty('org.conscrypt.openjdk.uberJarClassifiers',
-            'osx-x86_64,linux-x86_64,windows-x86,windows-x86_64')).split(',')
+            'linux-loongarch_64')).split(',')
+    println("$uberJarClassifiers")
+    //uberJarClassifiers = ""
     classesDir = "${buildDir}/classes"
     resourcesDir = "${buildDir}/resources"
     sourcesDir = "${buildDir}/sources"
@@ -28,7 +35,7 @@ if (buildUberJar) {
 
     // Add the dependencies for the uber jar.
     uberJarClassifiers.each { uberJarClassifier ->
-        dependencies.uberJar "${group}:conscrypt-openjdk:${version}:${uberJarClassifier}"
+        dependencies.uberJar "${group}:conscrypt-openjdk:${version}:conscrypt-openjdk-linux-loongarch_64.jar"
     }
 
     /**
@@ -49,7 +56,8 @@ if (buildUberJar) {
      * Copy the object files to the classes directory.
      */
     task copyClasses(type: Copy, dependsOn: configurations.uberJar) {
-        from {
+        //println("$uberJarClassifier")
+	from {
             configurations.uberJar.collect {
                 zipTree(it)
             }
@@ -76,6 +84,7 @@ if (buildUberJar) {
                     '-exportcontents': 'org.conscrypt.*')
     }
 
+    println("rootDir: $rootDir")
     apply from: "$rootDir/gradle/publishing.gradle"
     publishing.publications.maven {
         artifact sourcesJar

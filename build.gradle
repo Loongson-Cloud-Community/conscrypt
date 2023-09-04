@@ -5,13 +5,13 @@ buildscript {
     ext.errorproneVersion = '2.3.3'
     ext.errorproneJavacVersion = '9+181-r4173-1'
     repositories {
-        google()
-        jcenter()
+        mavenLocal()
+	jcenter()
     }
     dependencies {
         // This must be applied in the root project otherwise each subproject will
         // have it in a different ClassLoader.
-        classpath android_tools
+        //classpath android_tools
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.3.0'
     }
 }
@@ -22,6 +22,14 @@ plugins {
     id 'org.ajoberstar.grgit' version '3.1.1'
     id 'net.ltgt.errorprone' version '1.1.1'
 }
+model {
+    platforms {
+        linux_loongarch64 {
+            // 平台配置
+	    architecture "loongarch_64"
+        }
+    }
+}
 
 subprojects {
     def androidProject = ((project.name == 'conscrypt-android')
@@ -30,7 +38,8 @@ subprojects {
             || (project.name == 'conscrypt-benchmark-caliper'))
     if (androidProject) {
         repositories {
-            google()
+            mavenLocal()
+	    google()
         }
     } else {
         apply plugin: 'java-library'
@@ -38,10 +47,19 @@ subprojects {
 
         model {
             toolChains {
-                visualCpp(VisualCpp)
+                //visualCpp(VisualCpp)
                 // Prefer Clang over Gcc (order here matters!)
-                clang(Clang)
-                gcc(Gcc)
+                //clang(Clang)
+                //gcc(Gcc)
+		clang(Clang) {
+    			target("loongarch_64") {
+	        	cppCompiler.executable = "/usr/bin/clang"
+	    		}
+		}
+		//myToolchain(Clang) {
+         	   // 配置本地工具链的路径
+            	//path "/usr/bin/clang"
+        	//}
             }
         }
     }
@@ -54,6 +72,7 @@ subprojects {
     version = "2.5.2"
 
     ext {
+        //String os = System.getProperty("os.name");
         os = org.gradle.internal.os.OperatingSystem.current();
         if (os.isLinux()) {
             osName = "linux"
@@ -67,10 +86,12 @@ subprojects {
 
         if (project.hasProperty("boringsslHome")) {
             boringsslHome = project.property("boringsslHome")
+	    println("project property: $boringsslHome")
         } else {
             boringsslHome = "$System.env.BORINGSSL_HOME"
         }
-
+        boringsslHome =  "$System.env.boringsslHome"
+	//boringsslHome = "/home/yzw/workspce/conscrypt_loongarch_pxf/boringssl"
         boringsslIncludeDir = normalizePath("$boringsslHome/include")
         boringssl32BuildDir = normalizePath("$boringsslHome/build32")
         boringssl64BuildDir = normalizePath("$boringsslHome/build64")
@@ -88,6 +109,7 @@ subprojects {
         build64Bit = file("$boringssl64BuildDir").exists()
 
         // Ensure the environment is configured properly.
+        println("boringsslhome: $boringsslHome")
         assert file("$boringsslHome").exists()
         assert file("$boringsslIncludeDir").exists()
         assert build32Bit || build64Bit
@@ -139,9 +161,9 @@ subprojects {
     }
 
     repositories {
-        mavenCentral()
         mavenLocal()
-        jcenter()
+	mavenCentral()
+	jcenter()
     }
 
     jacoco {

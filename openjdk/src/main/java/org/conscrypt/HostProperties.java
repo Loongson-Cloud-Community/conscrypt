@@ -95,7 +95,8 @@ class HostProperties {
         AARCH_64,
         PPC_32,
         PPC_64,
-        PPCLE_64,
+        LOONGARCH_64,
+	PPCLE_64,
         S390_32,
         S390_64,
         UNKNOWN;
@@ -279,7 +280,10 @@ class HostProperties {
         if ("ppc64le".equals(value)) {
             return Architecture.PPCLE_64;
         }
-        if ("s390".equals(value)) {
+        if ("loongarch64".equals(value)) {
+            return Architecture.LOONGARCH_64;
+        }
+	if ("s390".equals(value)) {
             return Architecture.S390_32;
         }
         if ("s390x".equals(value)) {
